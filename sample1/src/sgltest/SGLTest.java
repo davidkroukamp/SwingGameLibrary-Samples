@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import javax.swing.JButton;
@@ -23,6 +24,8 @@ import za.co.swinggamelibrary.Animation;
 import za.co.swinggamelibrary.AnimationCache;
 import za.co.swinggamelibrary.Graphics2DHelper;
 import za.co.swinggamelibrary.ImageScaler;
+import za.co.swinggamelibrary.KeyBinder;
+import za.co.swinggamelibrary.Scene;
 import za.co.swinggamelibrary.SpriteFrame;
 import za.co.swinggamelibrary.SpriteFrameCache;
 
@@ -34,19 +37,14 @@ public class SGLTest {
 
     public static final int FPS = 60;
     public static final int WIDTH = 800, HEIGHT = 600;
-    // TODO add design resolution
-    // TODO add small resolution
-    // TODO add medium resolution
-    // TODO add large resolution
     public static final Dimension STANDARD_IMAGE_SCREEN_SIZE = new Dimension(800, 600);
-    private ImageScaler is = new ImageScaler(STANDARD_IMAGE_SCREEN_SIZE, new Dimension(WIDTH, HEIGHT));//create instance to allow creating of image sizes for current screen size and width
+    private ImageScaler is = new ImageScaler(STANDARD_IMAGE_SCREEN_SIZE, new Dimension(WIDTH, HEIGHT));
 
     public SGLTest() {
         loadSpritesAndAnimationsIntoCache();
         createAndShowGui();
     }
 
-    //code starts here
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
@@ -60,7 +58,7 @@ public class SGLTest {
                 // If Nimbus is not available, you can set the GUI to another look and feel.
             }
 
-            new SGLTest();//create an instance which incudes GUI etc
+            new SGLTest();
         });
     }
 
@@ -69,46 +67,46 @@ public class SGLTest {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
 
-        final TestScene gamePanel = new TestScene(FPS, WIDTH, HEIGHT);
+        final TestScene scene = new TestScene(FPS, WIDTH, HEIGHT);
 
         JPanel buttonPanel = new JPanel();
 
-        //create buttons to control game loop start pause/resume and stop
+        // create buttons to control game loop start pause/resume and stop
         final JButton startButton = new JButton("Start");
-
         final JButton pauseButton = new JButton("Pause");
         pauseButton.setEnabled(false);
-
         final JButton stopButton = new JButton("Stop");
         stopButton.setEnabled(false);
 
         //add listeners to buttons 
         startButton.addActionListener((ActionEvent ae) -> {
             //clear enitites currently in array
-            gamePanel.clearSprites();
+            scene.clearSprites();
 
-            //get starting position according to current screen size
-            //the position 0f 200,300 is on standrad screen size of 800,600
+            // get starting position according to current screen size
+            // the position 0f 200,300 is on standrad screen size of 800,600
             int startingXPlayer1 = (int) (200 * is.getWidthScaleFactor());
             int startingYPlayer1 = (int) (300 * is.getHeightScaleFactor());
 
             //create player 1 game onject which can be controlled by W,S,A,D and SPACE to shoot
-            final GameObject player1GameObject = new GameObject(startingXPlayer1, startingYPlayer1, AnimationCache.getInstance().getAnimation("player1Animation"), GameObject.RIGHT_FACING, gamePanel.getWidth(), gamePanel.getHeight());
+            final Player player1 = new Player(startingXPlayer1, startingYPlayer1, AnimationCache.getInstance().getAnimation("player1Animation"), Direction.RIGHT_FACING, scene.getWidth(), scene.getHeight());
 
-            //get starting position according to current screen size
-            //the position 0f 400,100 is on standrad screen size of 800,600
+            // get starting position according to current screen size
+            // the position 0f 400,100 is on standrad screen size of 800,600
             int startingXPlayer2 = (int) (400 * is.getWidthScaleFactor());
             int startingYPlayer2 = (int) (100 * is.getHeightScaleFactor());
 
-            final GameObject player2GameObject = new GameObject(startingXPlayer2, startingYPlayer2, AnimationCache.getInstance().getAnimation("player2Animation"), GameObject.LEFT_FACING, gamePanel.getWidth(), gamePanel.getHeight());
+            final Player player2 = new Player(startingXPlayer2, startingYPlayer2, AnimationCache.getInstance().getAnimation("player2Animation"), Direction.LEFT_FACING, scene.getWidth(), scene.getHeight());
 
-            //add gameobjetcs to the gamepanel
-            gamePanel.addSprite(player1GameObject);
-            gamePanel.addSprite(player2GameObject);
+            // add gameobjetcs to the gamepanel
+            scene.addSprite(player1);
+            scene.addSprite(player2);
 
-            GameKeyBindings gameKeyBindings = new GameKeyBindings(gamePanel, player1GameObject, player2GameObject);
+            // setup key bidnings for each player
+            setupPlayer1KeyBindings(scene, player1);
+            setupPlayer2KeyBindings(scene, player2);
 
-            gamePanel.start();
+            scene.start();
 
             startButton.setEnabled(false);
             pauseButton.setEnabled(true);
@@ -117,42 +115,40 @@ public class SGLTest {
 
         pauseButton.addActionListener((ActionEvent ae) -> {
             //checks if the game is paused or not and reacts by either resuming or pausing the game
-            if (gamePanel.isPaused()) {
-                gamePanel.resume();
+            if (scene.isPaused()) {
+                scene.resume();
             } else {
-                gamePanel.pause();
+                scene.pause();
             }
             if (pauseButton.getText().equals("Pause")) {
                 pauseButton.setText("Resume");
             } else {
                 pauseButton.setText("Pause");
-                gamePanel.requestFocusInWindow();//button might have focus
+                scene.requestFocusInWindow();//button might have focus
             }
         });
 
         stopButton.addActionListener((ActionEvent ae) -> {
-            gamePanel.stop();
+            scene.stop();
+
             /*
             //if we want enitites to be cleared and a blank panel shown
-            gp.clearGameObjects();
-            gp.repaint();
+            scene.clearSprites();
+            scene.repaint();
              */
-            if (!pauseButton.getText().equals("Pause")) {
-                pauseButton.setText("Pause");
-            }
+            pauseButton.setText("Pause");
             startButton.setEnabled(true);
             pauseButton.setEnabled(false);
             stopButton.setEnabled(false);
         });
 
-        //add buttons to panel
+        // add buttons to panel
         buttonPanel.add(startButton);
         buttonPanel.add(pauseButton);
         buttonPanel.add(stopButton);
-        //add game panel and button panel to jframe
-        frame.add(gamePanel, BorderLayout.CENTER);
+        // add game panel and button panel to jframe
+        frame.add(scene, BorderLayout.CENTER);
         frame.add(buttonPanel, BorderLayout.SOUTH);
-
         frame.pack();
         frame.setVisible(true);
     }
@@ -215,4 +211,81 @@ public class SGLTest {
         AnimationCache.getInstance().addAnimation("player2Animation", new Animation(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2Animation"), 200, 0));
     }
 
+    private void setupPlayer1KeyBindings(Scene scene, Player player1) {
+        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW, KeyEvent.VK_D,
+                (ActionEvent ae) -> {
+                    player1.RIGHT = true;
+                }, "D pressed",
+                (ActionEvent ae) -> {
+                    player1.RIGHT = false;
+                }, "D released");
+
+        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW, KeyEvent.VK_A,
+                (ActionEvent ae) -> {
+                    player1.LEFT = true;
+                }, "A pressed",
+                (ActionEvent ae) -> {
+                    player1.LEFT = false;
+                }, "A released");
+
+        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW, KeyEvent.VK_W,
+                (ActionEvent ae) -> {
+                    player1.UP = true;
+                }, "W pressed",
+                (ActionEvent ae) -> {
+                    player1.UP = false;
+                }, "W released");
+        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW, KeyEvent.VK_S,
+                (ActionEvent ae) -> {
+                    player1.DOWN = true;
+                }, "S pressed",
+                (ActionEvent ae) -> {
+                    player1.DOWN = false;
+                }, "S released");
+
+        KeyBinder.putKeyBindingOnPress(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW, KeyEvent.VK_SPACE,
+                (ActionEvent ae) -> {
+                    Bullet bullet = new Bullet((int) (player1.getX() + player1.getHeight() / 2), (int) (player1.getY() + player1.getWidth() / 2), AnimationCache.getInstance().getAnimation("bullet1Animation"), scene.getWidth(), player1);
+                    scene.addSprite(bullet);//add the bullet to the List of s that will be drawn on next screen paint
+                }, "Space pressed");
+    }
+
+    public void setupPlayer2KeyBindings(final Scene scene, final Player player2) {
+        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW, KeyEvent.VK_RIGHT,
+                (ActionEvent ae) -> {
+                    player2.RIGHT = true;
+                }, "right pressed",
+                (ActionEvent ae) -> {
+                    player2.RIGHT = false;
+                }, "right released");
+
+        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW, KeyEvent.VK_LEFT,
+                (ActionEvent ae) -> {
+                    player2.LEFT = true;
+                }, "left pressed",
+                (ActionEvent ae) -> {
+                    player2.LEFT = false;
+                }, "left released");
+
+        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW, KeyEvent.VK_UP,
+                (ActionEvent ae) -> {
+                    player2.UP = true;
+                }, "up pressed",
+                (ActionEvent ae) -> {
+                    player2.UP = false;
+                }, "up released");
+        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW, KeyEvent.VK_DOWN,
+                (ActionEvent ae) -> {
+                    player2.DOWN = true;
+                }, "down pressed",
+                (ActionEvent ae) -> {
+                    player2.DOWN = false;
+                }, "down released");
+
+        KeyBinder.putKeyBindingOnPress(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW, KeyEvent.VK_ENTER,
+                (ActionEvent ae) -> {
+                    Bullet bullet = new Bullet((int) (player2.getX() + player2.getHeight() / 2), (int) (player2.getY() + player2.getWidth() / 2), AnimationCache.getInstance().getAnimation("bullet2Animation"), scene.getWidth(), player2);
+                    scene.addSprite(bullet);//add the bullet to the List of s that will be drawn on next screen paint
+                }, "Enter pressed");
+    }
 }
