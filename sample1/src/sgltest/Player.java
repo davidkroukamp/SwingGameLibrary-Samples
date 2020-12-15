@@ -5,14 +5,17 @@
  */
 package sgltest;
 
+import java.awt.geom.Rectangle2D;
 import za.co.swinggamelibrary.Animation;
+import za.co.swinggamelibrary.ICollidable;
+import za.co.swinggamelibrary.INode;
 import za.co.swinggamelibrary.Sprite;
 
 /**
  *
  * @author dkrou
  */
-public class Player extends Sprite {
+public class Player extends Sprite implements ICollidable {
 
     private final static int DEFAULT_SPEED = 5;
     protected int speed;
@@ -33,6 +36,23 @@ public class Player extends Sprite {
     public void update(long elapsedTime) {
         super.update(elapsedTime);
         move();
+    }
+
+    @Override
+    public Rectangle2D getBounds2D() {
+        return rectangle.getBounds2D();
+    }
+
+    @Override
+    public boolean intersects(ICollidable collidable) {
+        return rectangle.intersects(collidable.getBounds2D());
+    }
+
+    @Override
+    public void onCollision(INode node) {
+        if (node instanceof Player) {
+            System.out.println("Players intersected");
+        }
     }
 
     public void setSpeed(int speed) {

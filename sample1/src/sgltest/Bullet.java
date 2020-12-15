@@ -5,14 +5,17 @@
  */
 package sgltest;
 
+import java.awt.geom.Rectangle2D;
 import za.co.swinggamelibrary.Animation;
+import za.co.swinggamelibrary.ICollidable;
+import za.co.swinggamelibrary.INode;
 import za.co.swinggamelibrary.Sprite;
 
 /**
  *
  * @author dkrou
  */
-public class Bullet extends Sprite {
+public class Bullet extends Sprite implements ICollidable {
 
     private final Sprite owner;
     private boolean left, right;
@@ -38,6 +41,26 @@ public class Bullet extends Sprite {
     public void update(long elapsedTime) {
         super.update(elapsedTime);
         move();
+    }
+
+    @Override
+    public Rectangle2D getBounds2D() {
+        return rectangle.getBounds2D();
+    }
+
+    @Override
+    public boolean intersects(ICollidable collidable) {
+        return rectangle.intersects(collidable.getBounds2D());
+    }
+
+    @Override
+    public void onCollision(INode node) {
+        if (node.equals(owner)) { // ensure we are not hitting ourselves as bullet spawns from center of player
+            return;
+        }
+        
+        removeFromParent();
+        System.out.println("Bullet struck another player");
     }
 
     public Sprite getOwner() {

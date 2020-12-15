@@ -63,14 +63,14 @@ public class SGLTest {
     }
 
     private void createAndShowGui() {
-        JFrame frame = new JFrame(SGLTest.class.getSimpleName());
+        JFrame frame = new JFrame("Sample 1");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
 
-        final TestScene scene = new TestScene(FPS, WIDTH, HEIGHT);
+        // create the Scene which will hold the player sprites
+        final Scene scene = new Scene(FPS, WIDTH, HEIGHT);
 
         JPanel buttonPanel = new JPanel();
-
         // create buttons to control game loop start pause/resume and stop
         final JButton startButton = new JButton("Start");
         final JButton pauseButton = new JButton("Pause");
@@ -81,7 +81,7 @@ public class SGLTest {
         //add listeners to buttons 
         startButton.addActionListener((ActionEvent ae) -> {
             //clear enitites currently in array
-            scene.clearSprites();
+            scene.clearNodes();
 
             // get starting position according to current screen size
             // the position 0f 200,300 is on standrad screen size of 800,600
@@ -89,18 +89,18 @@ public class SGLTest {
             int startingYPlayer1 = (int) (300 * is.getHeightScaleFactor());
 
             //create player 1 game onject which can be controlled by W,S,A,D and SPACE to shoot
-            final Player player1 = new Player(startingXPlayer1, startingYPlayer1, AnimationCache.getInstance().getAnimation("player1Animation"), Direction.RIGHT_FACING, scene.getWidth(), scene.getHeight());
+            final Player player1 = new Player(startingXPlayer1, startingYPlayer1, AnimationCache.getInstance().getAnimation("player1IdleAnimation"), Direction.RIGHT_FACING, scene.getWidth(), scene.getHeight());
 
             // get starting position according to current screen size
             // the position 0f 400,100 is on standrad screen size of 800,600
             int startingXPlayer2 = (int) (400 * is.getWidthScaleFactor());
             int startingYPlayer2 = (int) (100 * is.getHeightScaleFactor());
 
-            final Player player2 = new Player(startingXPlayer2, startingYPlayer2, AnimationCache.getInstance().getAnimation("player2Animation"), Direction.LEFT_FACING, scene.getWidth(), scene.getHeight());
+            final Player player2 = new Player(startingXPlayer2, startingYPlayer2, AnimationCache.getInstance().getAnimation("player2IdleAnimation"), Direction.LEFT_FACING, scene.getWidth(), scene.getHeight());
 
             // add gameobjetcs to the gamepanel
-            scene.addSprite(player1);
-            scene.addSprite(player2);
+            scene.add(player1);
+            scene.add(player2);
 
             // setup key bidnings for each player
             setupPlayer1KeyBindings(scene, player1);
@@ -170,12 +170,12 @@ public class SGLTest {
     private void loadPlayer1ImagesToSpriteFrameCache() {
         ArrayList<BufferedImage> images = new ArrayList<>();
         images.add(createColouredImage(Color.RED, 100, 100, false));
-        images.add(createColouredImage(Color.BLACK, 100, 100, false));
+        images.add(createColouredImage(Color.WHITE, 100, 100, false));
         images.add(createColouredImage(Color.GREEN, 100, 100, false));
         //create arraylist of images scaled for the current screen size
         ArrayList<BufferedImage> scaledImages = is.scaleImages(images);
         for (int i = 0; i < scaledImages.size(); i++) {
-            SpriteFrameCache.getInstance().addSpriteFramesWithKey("player1Animation", new SpriteFrame("player1_" + i + ".png", scaledImages.get(i)));
+            SpriteFrameCache.getInstance().addSpriteFramesWithKey("player1Idle", new SpriteFrame("player1_idle_" + i + ".png", scaledImages.get(i)));
         }
     }
 
@@ -187,7 +187,7 @@ public class SGLTest {
         //create arraylist of images scaled for the current screen size
         ArrayList<BufferedImage> scaledImages = is.scaleImages(images);
         for (int i = 0; i < scaledImages.size(); i++) {
-            SpriteFrameCache.getInstance().addSpriteFramesWithKey("player2Animation", new SpriteFrame("player2_" + i + ".png", scaledImages.get(i)));
+            SpriteFrameCache.getInstance().addSpriteFramesWithKey("player2Idle", new SpriteFrame("player2_idle_" + i + ".png", scaledImages.get(i)));
         }
     }
 
@@ -199,7 +199,7 @@ public class SGLTest {
         //laod images for player 1 into SpritFrameCache
         loadPlayer1ImagesToSpriteFrameCache();
         // load animation for player1 nto AnimationCache
-        AnimationCache.getInstance().addAnimation("player1Animation", new Animation(SpriteFrameCache.getInstance().getSpriteFramesByKey("player1Animation"), 300, 0));
+        AnimationCache.getInstance().addAnimation("player1IdleAnimation", new Animation(SpriteFrameCache.getInstance().getSpriteFramesByKey("player1Idle"), 300, 0));
 
         // load images for player 2 bullet into SpritFrameCache and AnimationCache
         SpriteFrameCache.getInstance().addSpriteFramesWithKey("bullet2Animation", new SpriteFrame("bullet_2.png", SGLTest.createColouredImage(Color.MAGENTA, 10, 10, true)));
@@ -208,7 +208,7 @@ public class SGLTest {
         //laod images for player 2 into SpritFrameCache
         loadPlayer2ImagesToSpriteFrameCache();
         // load animation for player 2 into AnimationCache
-        AnimationCache.getInstance().addAnimation("player2Animation", new Animation(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2Animation"), 200, 0));
+        AnimationCache.getInstance().addAnimation("player2IdleAnimation", new Animation(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2Idle"), 200, 0));
     }
 
     private void setupPlayer1KeyBindings(Scene scene, Player player1) {
@@ -246,7 +246,7 @@ public class SGLTest {
         KeyBinder.putKeyBindingOnPress(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW, KeyEvent.VK_SPACE,
                 (ActionEvent ae) -> {
                     Bullet bullet = new Bullet((int) (player1.getX() + player1.getHeight() / 2), (int) (player1.getY() + player1.getWidth() / 2), AnimationCache.getInstance().getAnimation("bullet1Animation"), scene.getWidth(), player1);
-                    scene.addSprite(bullet);//add the bullet to the List of s that will be drawn on next screen paint
+                    scene.add(bullet);
                 }, "Space pressed");
     }
 
@@ -285,7 +285,7 @@ public class SGLTest {
         KeyBinder.putKeyBindingOnPress(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW, KeyEvent.VK_ENTER,
                 (ActionEvent ae) -> {
                     Bullet bullet = new Bullet((int) (player2.getX() + player2.getHeight() / 2), (int) (player2.getY() + player2.getWidth() / 2), AnimationCache.getInstance().getAnimation("bullet2Animation"), scene.getWidth(), player2);
-                    scene.addSprite(bullet);//add the bullet to the List of s that will be drawn on next screen paint
+                    scene.add(bullet);
                 }, "Enter pressed");
     }
 }
