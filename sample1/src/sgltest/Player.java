@@ -6,7 +6,7 @@
 package sgltest;
 
 import java.awt.geom.Rectangle2D;
-import za.co.swinggamelibrary.Animation;
+import za.co.swinggamelibrary.AnimationFrame;
 import za.co.swinggamelibrary.ICollidable;
 import za.co.swinggamelibrary.INode;
 import za.co.swinggamelibrary.Sprite;
@@ -23,7 +23,7 @@ public class Player extends Sprite implements ICollidable {
     protected final int containerWidth, containerHeight;
     public boolean LEFT, RIGHT, UP, DOWN;
 
-    public Player(int x, int y, Animation animation, Direction direction, int containerWidth, int containerHeight) {
+    public Player(int x, int y, AnimationFrame animation, Direction direction, int containerWidth, int containerHeight) {
         super(x, y, animation);
         setVisible(true);
         this.direction = direction;

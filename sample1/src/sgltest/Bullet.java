@@ -6,7 +6,7 @@
 package sgltest;
 
 import java.awt.geom.Rectangle2D;
-import za.co.swinggamelibrary.Animation;
+import za.co.swinggamelibrary.AnimationFrame;
 import za.co.swinggamelibrary.ICollidable;
 import za.co.swinggamelibrary.INode;
 import za.co.swinggamelibrary.Sprite;
@@ -23,7 +23,7 @@ public class Bullet extends Sprite implements ICollidable {
     protected final int containerWidth;
     public final static int DEFAULT_SPEED = 5;
 
-    public Bullet(int x, int y, Animation animation, int containerWidth, final Player owner) {
+    public Bullet(int x, int y, AnimationFrame animation, int containerWidth, final Player owner) {
         super(x, y, animation);
         this.containerWidth = containerWidth;
         this.owner = owner;
