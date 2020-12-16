@@ -69,7 +69,11 @@ public class SGLTest {
 
         // create the Scene which will hold the player sprites
         final Scene scene = new Scene(FPS, WIDTH, HEIGHT);
-
+        // show FPS and objects rendered counter
+        scene.setRenderDebugInfo(true);
+        // draw red rectangles around nodes for debugging purposes (helps check collisions etc)
+        scene.setDrawDebugMasks(true);
+        
         JPanel buttonPanel = new JPanel();
         // create buttons to control game loop start pause/resume and stop
         final JButton startButton = new JButton("Start");
