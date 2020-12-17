@@ -12,7 +12,13 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -22,6 +28,7 @@ import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
 import za.co.swinggamelibrary.AnimationCache;
 import za.co.swinggamelibrary.AnimationFrame;
+import za.co.swinggamelibrary.AudioEngine;
 import za.co.swinggamelibrary.Graphics2DHelper;
 import za.co.swinggamelibrary.ImageScaler;
 import za.co.swinggamelibrary.KeyBinder;
@@ -42,6 +49,7 @@ public class SGLTest {
 
     public SGLTest() {
         loadSpritesAndAnimationsIntoCache();
+        loadSoundsIntoAudioEngineCache();
         createAndShowGui();
     }
 
@@ -265,6 +273,11 @@ public class SGLTest {
                     // TODO should call player.shoot();
                     Bullet bullet = new Bullet((int) (player1.getX() + player1.getHeight() / 2), (int) (player1.getY() + player1.getWidth() / 2), AnimationCache.getInstance().getAnimation("bullet1Animation"), scene.getWidth(), player1);
                     scene.add(bullet);
+                    try {
+                        AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);
+                    } catch (LineUnavailableException | UnsupportedAudioFileException | IOException | URISyntaxException ex) {
+                        Logger.getLogger(SGLTest.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }, "Space pressed");
     }
 
@@ -307,9 +320,22 @@ public class SGLTest {
         KeyBinder.putKeyBindingOnPress(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
                 KeyEvent.VK_ENTER,
                 (ActionEvent ae) -> {
-                    // TODO should call player.shoot();
-                    Bullet bullet = new Bullet((int) (player2.getX() + player2.getHeight() / 2), (int) (player2.getY() + player2.getWidth() / 2), AnimationCache.getInstance().getAnimation("bullet2Animation"), scene.getWidth(), player2);
-                    scene.add(bullet);
+                    try {
+                        // TODO should call player.shoot();
+                        Bullet bullet = new Bullet((int) (player2.getX() + player2.getHeight() / 2), (int) (player2.getY() + player2.getWidth() / 2), AnimationCache.getInstance().getAnimation("bullet2Animation"), scene.getWidth(), player2);
+                        scene.add(bullet);
+                        AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);
+                    } catch (LineUnavailableException | UnsupportedAudioFileException | IOException | URISyntaxException ex) {
+                        Logger.getLogger(SGLTest.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }, "Enter pressed");
+    }
+
+    private void loadSoundsIntoAudioEngineCache() {
+        try {
+            AudioEngine.getInstance().cache(getClass().getResource("assets/sounds/shot.wav"));
+        } catch (LineUnavailableException | UnsupportedAudioFileException | IOException | URISyntaxException ex) {
+            Logger.getLogger(SGLTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
