@@ -12,13 +12,7 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -46,6 +40,7 @@ public class SGLTest {
     public static final int WIDTH = 800, HEIGHT = 600;
     public static final Dimension STANDARD_IMAGE_SCREEN_SIZE = new Dimension(800, 600);
     private ImageScaler is = new ImageScaler(STANDARD_IMAGE_SCREEN_SIZE, new Dimension(WIDTH, HEIGHT));
+    private String backgroundMusicId;
 
     public SGLTest() {
         loadSpritesAndAnimationsIntoCache();
@@ -125,14 +120,17 @@ public class SGLTest {
             startButton.setEnabled(false);
             pauseButton.setEnabled(true);
             stopButton.setEnabled(true);
+            AudioEngine.getInstance().pauseMusic(backgroundMusicId);
         });
 
         pauseButton.addActionListener((ActionEvent ae) -> {
             //checks if the game is paused or not and reacts by either resuming or pausing the game
             if (scene.isPaused()) {
                 scene.resume();
+                AudioEngine.getInstance().pauseMusic(backgroundMusicId);
             } else {
                 scene.pause();
+                AudioEngine.getInstance().resumeMusic(backgroundMusicId);
             }
             if (pauseButton.getText().equals("Pause")) {
                 pauseButton.setText("Resume");
@@ -154,6 +152,7 @@ public class SGLTest {
             startButton.setEnabled(true);
             pauseButton.setEnabled(false);
             stopButton.setEnabled(false);
+            AudioEngine.getInstance().resumeMusic(backgroundMusicId);
         });
 
         // add buttons to panel
@@ -165,6 +164,8 @@ public class SGLTest {
         frame.add(buttonPanel, BorderLayout.SOUTH);
         frame.pack();
         frame.setVisible(true);
+
+        backgroundMusicId = AudioEngine.getInstance().playMusic(getClass().getResource("assets/sounds/mystical_theme.wav"), true, 0.7f);
     }
 
     public static BufferedImage createColouredImage(Color color, int w, int h, boolean circular) {
@@ -273,11 +274,8 @@ public class SGLTest {
                     // TODO should call player.shoot();
                     Bullet bullet = new Bullet((int) (player1.getX() + player1.getHeight() / 2), (int) (player1.getY() + player1.getWidth() / 2), AnimationCache.getInstance().getAnimation("bullet1Animation"), scene.getWidth(), player1);
                     scene.add(bullet);
-                    try {
-                        AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);
-                    } catch (LineUnavailableException | UnsupportedAudioFileException | IOException | URISyntaxException ex) {
-                        Logger.getLogger(SGLTest.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);
+
                 }, "Space pressed");
     }
 
@@ -320,22 +318,15 @@ public class SGLTest {
         KeyBinder.putKeyBindingOnPress(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
                 KeyEvent.VK_ENTER,
                 (ActionEvent ae) -> {
-                    try {
-                        // TODO should call player.shoot();
-                        Bullet bullet = new Bullet((int) (player2.getX() + player2.getHeight() / 2), (int) (player2.getY() + player2.getWidth() / 2), AnimationCache.getInstance().getAnimation("bullet2Animation"), scene.getWidth(), player2);
-                        scene.add(bullet);
-                        AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);
-                    } catch (LineUnavailableException | UnsupportedAudioFileException | IOException | URISyntaxException ex) {
-                        Logger.getLogger(SGLTest.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    // TODO should call player.shoot();
+                    Bullet bullet = new Bullet((int) (player2.getX() + player2.getHeight() / 2), (int) (player2.getY() + player2.getWidth() / 2), AnimationCache.getInstance().getAnimation("bullet2Animation"), scene.getWidth(), player2);
+                    scene.add(bullet);
+                    AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);
                 }, "Enter pressed");
     }
 
     private void loadSoundsIntoAudioEngineCache() {
-        try {
-            AudioEngine.getInstance().cache(getClass().getResource("assets/sounds/shot.wav"));
-        } catch (LineUnavailableException | UnsupportedAudioFileException | IOException | URISyntaxException ex) {
-            Logger.getLogger(SGLTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        AudioEngine.getInstance().cacheSound(getClass().getResource("assets/sounds/shot.wav"));
+        AudioEngine.getInstance().cacheMusic(getClass().getResource("assets/sounds/mystical_theme.wav"));
     }
 }
