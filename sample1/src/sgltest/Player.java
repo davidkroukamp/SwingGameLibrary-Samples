@@ -6,7 +6,9 @@
 package sgltest;
 
 import java.awt.geom.Rectangle2D;
+import za.co.swinggamelibrary.AnimationCache;
 import za.co.swinggamelibrary.AnimationFrame;
+import za.co.swinggamelibrary.AudioEngine;
 import za.co.swinggamelibrary.ICollidable;
 import za.co.swinggamelibrary.INode;
 import za.co.swinggamelibrary.Sprite;
@@ -22,14 +24,16 @@ public class Player extends Sprite implements ICollidable {
     protected Direction direction;
     protected final int containerWidth, containerHeight;
     public boolean LEFT, RIGHT, UP, DOWN;
+    private final String bulletAnimationName;
 
-    public Player(int x, int y, AnimationFrame animation, Direction direction, int containerWidth, int containerHeight) {
+    public Player(int x, int y, AnimationFrame animation, Direction direction, int containerWidth, int containerHeight, String bulletAnimationName) {
         super(x, y, animation);
-        setVisible(true);
+        this.setVisible(true);
         this.direction = direction;
         this.containerWidth = containerWidth;
         this.containerHeight = containerHeight;
-        speed = DEFAULT_SPEED;
+        this.bulletAnimationName = bulletAnimationName;
+        this.speed = DEFAULT_SPEED;
     }
 
     @Override
@@ -87,4 +91,13 @@ public class Player extends Sprite implements ICollidable {
         }
     }
 
+    public void shoot() {
+        int bulletX = (int) (getX() + getHeight() / 2);
+        int bulletY = (int) (getY() + getWidth() / 2);
+        AnimationFrame bulletAnimation = AnimationCache.getInstance().getAnimation(bulletAnimationName);
+        int parentWidth = (int) getParent().getWidth();
+        Bullet bullet = new Bullet(bulletX, bulletY, bulletAnimation, parentWidth, this);
+        getParent().add(bullet);
+        AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);
+    }
 }

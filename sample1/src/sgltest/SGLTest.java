@@ -23,6 +23,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import za.co.swinggamelibrary.AnimationCache;
 import za.co.swinggamelibrary.AnimationFrame;
 import za.co.swinggamelibrary.AudioEngine;
+import za.co.swinggamelibrary.Director;
 import za.co.swinggamelibrary.Graphics2DHelper;
 import za.co.swinggamelibrary.ImageScaler;
 import za.co.swinggamelibrary.KeyBinder;
@@ -70,12 +71,15 @@ public class SGLTest {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
 
-        // create the Scene which will hold the player sprites
-        final Scene scene = new Scene(FPS, WIDTH, HEIGHT);
+        Director director = new Director(FPS, WIDTH, HEIGHT);
         // show FPS and objects rendered counter
-        scene.setRenderDebugInfo(true);
+        director.setRenderDebugInfo(true);
         // draw red rectangles around nodes for debugging purposes (helps check collisions etc)
-        scene.setDrawDebugMasks(true);
+        director.setDrawDebugMasks(true);
+
+        // create the Scene which will hold the player sprites
+        final Scene scene = new Scene();
+        director.setScene(scene);
 
         JPanel buttonPanel = new JPanel();
         // create buttons to control game loop start pause/resume and stop
@@ -88,7 +92,7 @@ public class SGLTest {
         //add listeners to buttons 
         startButton.addActionListener((ActionEvent ae) -> {
             //clear enitites currently in array
-            scene.clearNodes();
+            scene.removeAll();
 
             // get starting position according to current screen size
             // the position 0f 200,300 is on standrad screen size of 800,600
@@ -97,7 +101,7 @@ public class SGLTest {
 
             //create player 1 game onject which can be controlled by W,S,A,D and SPACE to shoot
             final Player player1 = new Player(startingXPlayer1, startingYPlayer1,
-                    AnimationCache.getInstance().getAnimation("player1IdleAnimation"), Direction.RIGHT_FACING, scene.getWidth(), scene.getHeight());
+                    AnimationCache.getInstance().getAnimation("player1IdleAnimation"), Direction.RIGHT_FACING, director.getWidth(), director.getHeight(), "bullet1Animation");
 
             // get starting position according to current screen size
             // the position 0f 400,100 is on standrad screen size of 800,600
@@ -105,17 +109,17 @@ public class SGLTest {
             int startingYPlayer2 = (int) (100 * is.getHeightScaleFactor());
 
             final Player player2 = new Player(startingXPlayer2, startingYPlayer2,
-                    AnimationCache.getInstance().getAnimation("player2IdleAnimation"), Direction.LEFT_FACING, scene.getWidth(), scene.getHeight());
+                    AnimationCache.getInstance().getAnimation("player2IdleAnimation"), Direction.LEFT_FACING, director.getWidth(), director.getHeight(), "bullet2Animation");
 
             // add gameobjetcs to the gamepanel
             scene.add(player1);
             scene.add(player2);
 
             // setup key bidnings for each player
-            setupPlayer1KeyBindings(scene, player1);
-            setupPlayer2KeyBindings(scene, player2);
+            setupPlayer1KeyBindings(director, player1);
+            setupPlayer2KeyBindings(director, player2);
 
-            scene.start();
+            director.start();
 
             startButton.setEnabled(false);
             pauseButton.setEnabled(true);
@@ -125,23 +129,23 @@ public class SGLTest {
 
         pauseButton.addActionListener((ActionEvent ae) -> {
             //checks if the game is paused or not and reacts by either resuming or pausing the game
-            if (scene.isPaused()) {
-                scene.resume();
+            if (director.isPaused()) {
+                director.resume();
                 AudioEngine.getInstance().pauseMusic(backgroundMusicId);
             } else {
-                scene.pause();
+                director.pause();
                 AudioEngine.getInstance().resumeMusic(backgroundMusicId);
             }
             if (pauseButton.getText().equals("Pause")) {
                 pauseButton.setText("Resume");
             } else {
                 pauseButton.setText("Pause");
-                scene.requestFocusInWindow();//button might have focus
+                director.requestFocusInWindow();//button might have focus
             }
         });
 
         stopButton.addActionListener((ActionEvent ae) -> {
-            scene.stop();
+            director.stop();
 
             /*
             //if we want enitites to be cleared and a blank panel shown
@@ -160,11 +164,10 @@ public class SGLTest {
         buttonPanel.add(pauseButton);
         buttonPanel.add(stopButton);
         // add game panel and button panel to jframe
-        frame.add(scene, BorderLayout.CENTER);
+        frame.add(director, BorderLayout.CENTER);
         frame.add(buttonPanel, BorderLayout.SOUTH);
         frame.pack();
         frame.setVisible(true);
-
         backgroundMusicId = AudioEngine.getInstance().playMusic(getClass().getResource("assets/sounds/mystical_theme.wav"), true, 0.7f);
     }
 
@@ -232,8 +235,8 @@ public class SGLTest {
                 new AnimationFrame(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2Idle"), 200, 0));
     }
 
-    private void setupPlayer1KeyBindings(Scene scene, Player player1) {
-        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
+    private void setupPlayer1KeyBindings(Director director, Player player1) {
+        KeyBinder.putKeyBindingOnPressAndRelease(director, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
                 KeyEvent.VK_D,
                 (ActionEvent ae) -> {
                     player1.RIGHT = true;
@@ -242,7 +245,7 @@ public class SGLTest {
                     player1.RIGHT = false;
                 }, "D released");
 
-        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
+        KeyBinder.putKeyBindingOnPressAndRelease(director, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
                 KeyEvent.VK_A,
                 (ActionEvent ae) -> {
                     player1.LEFT = true;
@@ -251,7 +254,7 @@ public class SGLTest {
                     player1.LEFT = false;
                 }, "A released");
 
-        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
+        KeyBinder.putKeyBindingOnPressAndRelease(director, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
                 KeyEvent.VK_W,
                 (ActionEvent ae) -> {
                     player1.UP = true;
@@ -259,7 +262,7 @@ public class SGLTest {
                 (ActionEvent ae) -> {
                     player1.UP = false;
                 }, "W released");
-        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
+        KeyBinder.putKeyBindingOnPressAndRelease(director, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
                 KeyEvent.VK_S,
                 (ActionEvent ae) -> {
                     player1.DOWN = true;
@@ -268,19 +271,15 @@ public class SGLTest {
                     player1.DOWN = false;
                 }, "S released");
 
-        KeyBinder.putKeyBindingOnPress(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
+        KeyBinder.putKeyBindingOnPress(director, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
                 KeyEvent.VK_SPACE,
                 (ActionEvent ae) -> {
-                    // TODO should call player.shoot();
-                    Bullet bullet = new Bullet((int) (player1.getX() + player1.getHeight() / 2), (int) (player1.getY() + player1.getWidth() / 2), AnimationCache.getInstance().getAnimation("bullet1Animation"), scene.getWidth(), player1);
-                    scene.add(bullet);
-                    AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);
-
+                    player1.shoot();
                 }, "Space pressed");
     }
 
-    public void setupPlayer2KeyBindings(final Scene scene, final Player player2) {
-        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
+    public void setupPlayer2KeyBindings(final Director director, final Player player2) {
+        KeyBinder.putKeyBindingOnPressAndRelease(director, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
                 KeyEvent.VK_RIGHT,
                 (ActionEvent ae) -> {
                     player2.RIGHT = true;
@@ -289,7 +288,7 @@ public class SGLTest {
                     player2.RIGHT = false;
                 }, "right released");
 
-        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
+        KeyBinder.putKeyBindingOnPressAndRelease(director, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
                 KeyEvent.VK_LEFT,
                 (ActionEvent ae) -> {
                     player2.LEFT = true;
@@ -298,7 +297,7 @@ public class SGLTest {
                     player2.LEFT = false;
                 }, "left released");
 
-        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
+        KeyBinder.putKeyBindingOnPressAndRelease(director, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
                 KeyEvent.VK_UP,
                 (ActionEvent ae) -> {
                     player2.UP = true;
@@ -306,7 +305,7 @@ public class SGLTest {
                 (ActionEvent ae) -> {
                     player2.UP = false;
                 }, "up released");
-        KeyBinder.putKeyBindingOnPressAndRelease(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
+        KeyBinder.putKeyBindingOnPressAndRelease(director, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
                 KeyEvent.VK_DOWN,
                 (ActionEvent ae) -> {
                     player2.DOWN = true;
@@ -315,13 +314,10 @@ public class SGLTest {
                     player2.DOWN = false;
                 }, "down released");
 
-        KeyBinder.putKeyBindingOnPress(scene, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
+        KeyBinder.putKeyBindingOnPress(director, KeyBinder.WHEN_IN_FOCUSED_WINDOW,
                 KeyEvent.VK_ENTER,
                 (ActionEvent ae) -> {
-                    // TODO should call player.shoot();
-                    Bullet bullet = new Bullet((int) (player2.getX() + player2.getHeight() / 2), (int) (player2.getY() + player2.getWidth() / 2), AnimationCache.getInstance().getAnimation("bullet2Animation"), scene.getWidth(), player2);
-                    scene.add(bullet);
-                    AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);
+                    player2.shoot();
                 }, "Enter pressed");
     }
 

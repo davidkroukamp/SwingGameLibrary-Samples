@@ -42,7 +42,8 @@ public class Bullet extends Sprite implements ICollidable {
         super.update(elapsedTime);
         move();
     }
-
+    
+    
     @Override
     public Rectangle2D getBounds2D() {
         return rectangle.getBounds2D();
@@ -68,13 +69,13 @@ public class Bullet extends Sprite implements ICollidable {
     }
 
     private void move() {
-        if ((rectangle.x - speed) <= 0) {
+        if (left && (rectangle.x - speed) <= 0) {
             removeFromParent();
         } else if (left) {
             rectangle.x -= speed;
         }
 
-        if ((rectangle.x + speed) + getWidth() >= containerWidth) {
+        if (right && (rectangle.x + speed) + getWidth() >= containerWidth) {
             removeFromParent();
         } else if (right) {
             rectangle.x += speed;
