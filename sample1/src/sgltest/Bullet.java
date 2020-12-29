@@ -5,7 +5,6 @@
  */
 package sgltest;
 
-import java.awt.geom.Rectangle2D;
 import za.co.swinggamelibrary.AnimationFrame;
 import za.co.swinggamelibrary.ICollidable;
 import za.co.swinggamelibrary.INode;
@@ -42,24 +41,13 @@ public class Bullet extends Sprite implements ICollidable {
         super.update(elapsedTime);
         move();
     }
-    
-    
-    @Override
-    public Rectangle2D getBounds2D() {
-        return rectangle.getBounds2D();
-    }
-
-    @Override
-    public boolean intersects(ICollidable collidable) {
-        return rectangle.intersects(collidable.getBounds2D());
-    }
 
     @Override
     public void onCollision(INode node) {
         if (node.equals(owner)) { // ensure we are not hitting ourselves as bullet spawns from center of player
             return;
         }
-        
+
         removeFromParent();
         System.out.println("Bullet struck another player");
     }
@@ -69,16 +57,16 @@ public class Bullet extends Sprite implements ICollidable {
     }
 
     private void move() {
-        if (left && (rectangle.x - speed) <= 0) {
+        if (left && (getX() - speed) <= 0) {
             removeFromParent();
         } else if (left) {
-            rectangle.x -= speed;
+            setX(getX() - speed);
         }
 
-        if (right && (rectangle.x + speed) + getWidth() >= containerWidth) {
+        if (right && (getX() + speed) + getWidth() >= containerWidth) {
             removeFromParent();
         } else if (right) {
-            rectangle.x += speed;
+            setX(getX() + speed);
         }
     }
 }

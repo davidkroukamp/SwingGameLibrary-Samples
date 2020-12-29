@@ -5,7 +5,6 @@
  */
 package sgltest;
 
-import java.awt.geom.Rectangle2D;
 import za.co.swinggamelibrary.AnimationCache;
 import za.co.swinggamelibrary.AnimationFrame;
 import za.co.swinggamelibrary.AudioEngine;
@@ -43,16 +42,6 @@ public class Player extends Sprite implements ICollidable {
     }
 
     @Override
-    public Rectangle2D getBounds2D() {
-        return rectangle.getBounds2D();
-    }
-
-    @Override
-    public boolean intersects(ICollidable collidable) {
-        return rectangle.intersects(collidable.getBounds2D());
-    }
-
-    @Override
     public void onCollision(INode node) {
         if (node instanceof Player) {
             System.out.println("Players intersected");
@@ -72,22 +61,22 @@ public class Player extends Sprite implements ICollidable {
     }
 
     private void move() {
-        if (LEFT && (rectangle.x - speed) >= 0) {
+        if (LEFT && (getX() - speed) >= 0) {
             direction = Direction.LEFT_FACING;
-            rectangle.x -= speed;
+            setX(getX() - speed);
         }
 
-        if (RIGHT && (rectangle.x + speed) + getWidth() <= containerWidth) {
+        if (RIGHT && (getX() + speed) + getWidth() <= containerWidth) {
             direction = Direction.RIGHT_FACING;
-            rectangle.x += speed;
+            setX(getX() + speed);
         }
 
-        if (UP && (rectangle.y - speed) >= 0) {
-            rectangle.y -= speed;
+        if (UP && (getY() - speed) >= 0) {
+            setY(getY() - speed);
         }
 
-        if (DOWN && (rectangle.y + speed) + getHeight() <= containerHeight) {
-            rectangle.y += speed;
+        if (DOWN && (getY() + speed) + getHeight() <= containerHeight) {
+            setY(getY() + speed);
         }
     }
 
