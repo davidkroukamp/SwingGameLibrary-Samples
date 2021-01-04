@@ -5,6 +5,7 @@
  */
 package sgltest;
 
+import za.co.swinggamelibrary.AnimationCache;
 import za.co.swinggamelibrary.AnimationFrame;
 import za.co.swinggamelibrary.ICollidable;
 import za.co.swinggamelibrary.INode;
@@ -19,15 +20,12 @@ public class Bullet extends Sprite implements ICollidable {
     private final Sprite owner;
     private boolean left, right;
     protected int speed;
-    protected final int containerWidth;
     public final static int DEFAULT_SPEED = 5;
 
-    public Bullet(int x, int y, AnimationFrame animation, int containerWidth, final Player owner) {
-        super(x, y, animation);
-        this.containerWidth = containerWidth;
+    public Bullet(int worldX, int worldY, AnimationFrame animation, final Player owner) {
+        super(worldX, worldY, animation);
         this.owner = owner;
         speed = DEFAULT_SPEED * 2;
-        setVisible(true);
         // check which way the player is facing and make bullet face and travel in the correct direction
         if (owner.getDirection() == Direction.LEFT_FACING) {
             left = true;
@@ -57,16 +55,16 @@ public class Bullet extends Sprite implements ICollidable {
     }
 
     private void move() {
-        if (left && (getX() - speed) <= 0) {
+        if (left && (getScreenX() - speed) <= 0) {
             removeFromParent();
         } else if (left) {
-            setX(getX() - speed);
+            setWorldX(getWorldX() - speed);
         }
 
-        if (right && (getX() + speed) + getWidth() >= containerWidth) {
+        if (right && (getScreenX() + speed) + getWidth() >= getParent().getWidth()) {
             removeFromParent();
         } else if (right) {
-            setX(getX() + speed);
+            setWorldX(getWorldX() + speed);
         }
     }
 }

@@ -21,16 +21,12 @@ public class Player extends Sprite implements ICollidable {
     private final static int DEFAULT_SPEED = 5;
     protected int speed;
     protected Direction direction;
-    protected final int containerWidth, containerHeight;
     public boolean LEFT, RIGHT, UP, DOWN;
     private final String bulletAnimationName;
 
-    public Player(int x, int y, AnimationFrame animation, Direction direction, int containerWidth, int containerHeight, String bulletAnimationName) {
-        super(x, y, animation);
-        this.setVisible(true);
+    public Player(int worldX, int worldY, AnimationFrame animation, Direction direction, String bulletAnimationName) {
+        super(worldX, worldY, animation);
         this.direction = direction;
-        this.containerWidth = containerWidth;
-        this.containerHeight = containerHeight;
         this.bulletAnimationName = bulletAnimationName;
         this.speed = DEFAULT_SPEED;
     }
@@ -61,31 +57,30 @@ public class Player extends Sprite implements ICollidable {
     }
 
     private void move() {
-        if (LEFT && (getX() - speed) >= 0) {
+        if (LEFT && (getScreenX() - speed) >= 0) {
             direction = Direction.LEFT_FACING;
-            setX(getX() - speed);
+            setWorldX(getWorldX() - speed);
         }
 
-        if (RIGHT && (getX() + speed) + getWidth() <= containerWidth) {
+        if (RIGHT && (getScreenX() + speed) + getWidth() <= getParent().getWidth()) {
             direction = Direction.RIGHT_FACING;
-            setX(getX() + speed);
+            setWorldX(getWorldX() + speed);
         }
 
-        if (UP && (getY() - speed) >= 0) {
-            setY(getY() - speed);
+        if (UP && (getScreenY() - speed) >= 0) {
+            setWorldY(getWorldY() - speed);
         }
 
-        if (DOWN && (getY() + speed) + getHeight() <= containerHeight) {
-            setY(getY() + speed);
+        if (DOWN && (getScreenY() + speed) + getHeight() <= getParent().getHeight()) {
+            setWorldY(getWorldY() + speed);
         }
     }
 
     public void shoot() {
-        int bulletX = (int) (getX() + getHeight() / 2);
-        int bulletY = (int) (getY() + getWidth() / 2);
+        int bulletX = (int) (getWorldX() + getWidth() / 2);
+        int bulletY = (int) (getWorldY() + getHeight() / 2);
         AnimationFrame bulletAnimation = AnimationCache.getInstance().getAnimation(bulletAnimationName);
-        int parentWidth = (int) getParent().getWidth();
-        Bullet bullet = new Bullet(bulletX, bulletY, bulletAnimation, parentWidth, this);
+        Bullet bullet = new Bullet(bulletX, bulletY, bulletAnimation, this, true);
         getParent().add(bullet);
         AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);
     }

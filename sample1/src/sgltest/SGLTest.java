@@ -23,6 +23,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import za.co.swinggamelibrary.AnimationCache;
 import za.co.swinggamelibrary.AnimationFrame;
 import za.co.swinggamelibrary.AudioEngine;
+import za.co.swinggamelibrary.DesignMetrics;
 import za.co.swinggamelibrary.Director;
 import za.co.swinggamelibrary.Graphics2DHelper;
 import za.co.swinggamelibrary.ImageScaler;
@@ -37,13 +38,13 @@ import za.co.swinggamelibrary.SpriteFrameCache;
  */
 public class SGLTest {
 
-    public static final int FPS = 60;
-    public static final int WIDTH = 800, HEIGHT = 600;
-    public static final Dimension STANDARD_IMAGE_SCREEN_SIZE = new Dimension(800, 600);
-    private ImageScaler is = new ImageScaler(STANDARD_IMAGE_SCREEN_SIZE, new Dimension(WIDTH, HEIGHT));
+    private static final int FPS = 60;
+    private static final Dimension SCREEN_SIZE = new Dimension(1440, 900);
+    private static final Dimension DESIGN_SCREEN_SIZE = new Dimension(800, 600);
     private String backgroundMusicId;
 
     public SGLTest() {
+        DesignMetrics.getInstance().initialise(DESIGN_SCREEN_SIZE, SCREEN_SIZE);
         loadSpritesAndAnimationsIntoCache();
         loadSoundsIntoAudioEngineCache();
         createAndShowGui();
@@ -71,7 +72,8 @@ public class SGLTest {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
 
-        Director director = new Director(FPS, WIDTH, HEIGHT);
+        // Designmetrics should be initialised before creating an instance of the director
+        Director director = new Director(FPS);
         // show FPS and objects rendered counter
         director.setRenderDebugInfo(true);
         // draw red rectangles around nodes for debugging purposes (helps check collisions etc)
@@ -91,25 +93,16 @@ public class SGLTest {
 
         //add listeners to buttons 
         startButton.addActionListener((ActionEvent ae) -> {
-            //clear enitites currently in array
+            //clear enitites currently in arrayd
             scene.removeAll();
 
-            // get starting position according to current screen size
-            // the position 0f 200,300 is on standrad screen size of 800,600
-            int startingXPlayer1 = (int) (200 * is.getWidthScaleFactor());
-            int startingYPlayer1 = (int) (300 * is.getHeightScaleFactor());
+            //create player 1 game object which can be controlled by W,S,A,D and SPACE to shoot
+            final Player player1 = new Player(0, 0,
+                    AnimationCache.getInstance().getAnimation("player1IdleAnimation"), Direction.RIGHT_FACING, "bullet1Animation");
 
-            //create player 1 game onject which can be controlled by W,S,A,D and SPACE to shoot
-            final Player player1 = new Player(startingXPlayer1, startingYPlayer1,
-                    AnimationCache.getInstance().getAnimation("player1IdleAnimation"), Direction.RIGHT_FACING, director.getWidth(), director.getHeight(), "bullet1Animation");
-
-            // get starting position according to current screen size
-            // the position 0f 400,100 is on standrad screen size of 800,600
-            int startingXPlayer2 = (int) (400 * is.getWidthScaleFactor());
-            int startingYPlayer2 = (int) (100 * is.getHeightScaleFactor());
-
-            final Player player2 = new Player(startingXPlayer2, startingYPlayer2,
-                    AnimationCache.getInstance().getAnimation("player2IdleAnimation"), Direction.LEFT_FACING, director.getWidth(), director.getHeight(), "bullet2Animation");
+            //create player 2 game onject which can be controlled by UP,DOWN,LEFT,RIGHT and Numpad ENTER to shoot
+            final Player player2 = new Player(700, 500,
+                    AnimationCache.getInstance().getAnimation("player2IdleAnimation"), Direction.LEFT_FACING, "bullet2Animation");
 
             // add gameobjetcs to the gamepanel
             scene.add(player1);
@@ -145,13 +138,10 @@ public class SGLTest {
         });
 
         stopButton.addActionListener((ActionEvent ae) -> {
-            director.stop();
-
-            /*
             //if we want enitites to be cleared and a blank panel shown
-            scene.clearSprites();
-            scene.repaint();
-             */
+            //scene.removeAll();    
+            director.stop();
+            
             pauseButton.setText("Pause");
             startButton.setEnabled(true);
             pauseButton.setEnabled(false);
@@ -191,7 +181,7 @@ public class SGLTest {
         images.add(createColouredImage(Color.WHITE, 100, 100, false));
         images.add(createColouredImage(Color.GREEN, 100, 100, false));
         //create arraylist of images scaled for the current screen size
-        ArrayList<BufferedImage> scaledImages = is.scaleImages(images);
+        ArrayList<BufferedImage> scaledImages = ImageScaler.getInstance().scaleImages(images);
         for (int i = 0; i < scaledImages.size(); i++) {
             SpriteFrameCache.getInstance().addSpriteFramesWithKey("player1Idle",
                     new SpriteFrame("player1_idle_" + i + ".png", scaledImages.get(i)));
@@ -203,8 +193,8 @@ public class SGLTest {
         images.add(createColouredImage(Color.CYAN, 100, 100, false));
         images.add(createColouredImage(Color.YELLOW, 100, 100, false));
         images.add(createColouredImage(Color.MAGENTA, 100, 100, false));
-        //create arraylist of images scaled for the current screen size
-        ArrayList<BufferedImage> scaledImages = is.scaleImages(images);
+        // create arraylist of images scaled for the current screen size
+        ArrayList<BufferedImage> scaledImages = ImageScaler.getInstance().scaleImages(images);
         for (int i = 0; i < scaledImages.size(); i++) {
             SpriteFrameCache.getInstance().addSpriteFramesWithKey("player2Idle",
                     new SpriteFrame("player2_idle_" + i + ".png", scaledImages.get(i)));
@@ -217,7 +207,7 @@ public class SGLTest {
                 new SpriteFrame("bullet_1.png", SGLTest.createColouredImage(Color.ORANGE, 10, 10, true)));
         AnimationCache.getInstance().addAnimation("bullet1Animation",
                 new AnimationFrame(SpriteFrameCache.getInstance().getSpriteFramesByKey("bullet1Animation"), 0, 0));
-        //laod images for player 1 into SpritFrameCache
+        // load images for player 1 into SpritFrameCache
         loadPlayer1ImagesToSpriteFrameCache();
         // load animation for player1 nto AnimationCache
         AnimationCache.getInstance().addAnimation("player1IdleAnimation",
@@ -227,12 +217,12 @@ public class SGLTest {
         SpriteFrameCache.getInstance().addSpriteFramesWithKey("bullet2Animation",
                 new SpriteFrame("bullet_2.png", SGLTest.createColouredImage(Color.MAGENTA, 10, 10, true)));
         AnimationCache.getInstance().addAnimation("bullet2Animation",
-                new AnimationFrame(SpriteFrameCache.getInstance().getSpriteFramesByKey("bullet2Animation"), 200, 0));
+                new AnimationFrame(SpriteFrameCache.getInstance().getSpriteFramesByKey("bullet2Animation"), 0, 0));
         //laod images for player 2 into SpritFrameCache
         loadPlayer2ImagesToSpriteFrameCache();
         // load animation for player 2 into AnimationCache
         AnimationCache.getInstance().addAnimation("player2IdleAnimation",
-                new AnimationFrame(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2Idle"), 200, 0));
+                new AnimationFrame(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2Idle"), 300, 0));
     }
 
     private void setupPlayer1KeyBindings(Director director, Player player1) {
