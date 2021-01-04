@@ -80,7 +80,7 @@ public class Player extends Sprite implements ICollidable {
         int bulletX = (int) (getWorldX() + getWidth() / 2);
         int bulletY = (int) (getWorldY() + getHeight() / 2);
         AnimationFrame bulletAnimation = AnimationCache.getInstance().getAnimation(bulletAnimationName);
-        Bullet bullet = new Bullet(bulletX, bulletY, bulletAnimation, this, true);
+        Bullet bullet = new Bullet(bulletX, bulletY, bulletAnimation, this);
         getParent().add(bullet);
         AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);
     }
