@@ -5,7 +5,6 @@
  */
 package sgltest;
 
-import za.co.swinggamelibrary.AnimationCache;
 import za.co.swinggamelibrary.AnimationFrame;
 import za.co.swinggamelibrary.ICollidable;
 import za.co.swinggamelibrary.INode;
