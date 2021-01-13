@@ -15,8 +15,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -35,7 +33,6 @@ import za.co.swinggamelibrary.AudioEngine;
 import za.co.swinggamelibrary.DesignMetrics;
 import za.co.swinggamelibrary.Director;
 import za.co.swinggamelibrary.Graphics2DHelper;
-import za.co.swinggamelibrary.ImageScaler;
 import za.co.swinggamelibrary.KeyBinder;
 import za.co.swinggamelibrary.Scene;
 import za.co.swinggamelibrary.SpriteFrame;
@@ -53,8 +50,8 @@ public class SGLTest {
 
     public SGLTest() {
         DesignMetrics.initialise(DESIGN_SCREEN_SIZE, SCREEN_SIZE);
-        loadSpritesAndAnimationsIntoCache();
-        loadSoundsIntoAudioEngineCache();
+        loadSpritesAndAnimations();
+        loadSounds();
         createAndShowGui();
     }
 
@@ -104,13 +101,13 @@ public class SGLTest {
             //clear enitites currently in arrayd
             scene.removeAll();
 
-            //create player 1 game object which can be controlled by W,S,A,D and SPACE to shoot
+            //create player 1 which can be controlled by W,S,A,D and SPACE to shoot
             final Player player1 = new Player(0, 0,
-                    AnimationCache.getInstance().getAnimation("player1IdleAnimation"), Direction.RIGHT_FACING, "player1BulletAnimation", "player1BloodSplatterAnimation", false);
+                    AnimationCache.getInstance().getAnimation("player1IdleAnimation"), Direction.RIGHT_FACING, "shuriken_standard.png", "blood_splatter_1.png", false);
 
-            //create player 2 game onject which can be controlled by UP,DOWN,LEFT,RIGHT and Numpad ENTER to shoot
+            //create player 2 which can be controlled by UP,DOWN,LEFT,RIGHT and Numpad ENTER to shoot
             final Player player2 = new Player(700, 500,
-                    AnimationCache.getInstance().getAnimation("player2IdleAnimation"), Direction.LEFT_FACING, "player2BulletAnimation", "player2BloodSplatterAnimation", true);
+                    AnimationCache.getInstance().getAnimation("player2IdleAnimation"), Direction.LEFT_FACING, "shuriken_standard.png", "blood_splatter_2.png", true);
 
             // add gameobjetcs to the gamepanel
             scene.add(player1);
@@ -129,7 +126,7 @@ public class SGLTest {
         });
 
         pauseButton.addActionListener((ActionEvent ae) -> {
-            //checks if the game is paused or not and reacts by either resuming or pausing the game
+            // checks if the game is paused or not and reacts by either resuming or pausing the game
             if (director.isPaused()) {
                 director.resume();
                 AudioEngine.getInstance().pauseMusic(backgroundMusicId);
@@ -146,8 +143,8 @@ public class SGLTest {
         });
 
         stopButton.addActionListener((ActionEvent ae) -> {
-            //if we want enitites to be cleared and a blank panel shown
-            //scene.removeAll();    
+            // if we want enitites to be cleared and a blank panel shown
+            // scene.removeAll();    
             director.stop();
 
             pauseButton.setText("Pause");
@@ -166,87 +163,46 @@ public class SGLTest {
         frame.add(buttonPanel, BorderLayout.SOUTH);
         frame.pack();
         frame.setVisible(true);
+
         backgroundMusicId = AudioEngine.getInstance().playMusic(getClass().getResource("assets/sounds/mystical_theme.wav"), true, 0.7f);
     }
 
-    public static BufferedImage createColouredImage(Color color, int w, int h, boolean circular) {
-        BufferedImage img = new BufferedImage(w, h, BufferedImage.TRANSLUCENT);
-        Graphics2D g2 = img.createGraphics();
-        Graphics2DHelper.applyRenderHints(g2);
-        g2.setColor(color);
-        if (!circular) {
-            g2.fillRect(0, 0, img.getWidth(), img.getHeight());
-        } else {
-            g2.fillOval(0, 0, w, h);
-        }
-        g2.dispose();
-        return img;
-    }
-
-    private void loadPlayer1ImagesToSpriteFrameCache() {
-        // idle blinking
+    private void loadSpritesAndAnimations() {
         try {
-            File pList = new File(getClass().getResource("assets/characters/player/player_1_idle_blinking.plist").toURI());
-            BufferedImage spriteSheet = ImageIO.read(getClass().getResourceAsStream("assets/characters/player/player_1_idle_blinking.png"));
-            SpriteFrameCache.getInstance().addSpriteFramesWithFile("player1IdleFrames", pList, spriteSheet);
+            // player 1 idle blinking
+            File player1IdlePlist = new File(getClass().getResource("assets/characters/player/player_1_idle_blinking.plist").toURI());
+            BufferedImage player1IdleSpriteSheet = ImageIO.read(getClass().getResourceAsStream("assets/characters/player/player_1_idle_blinking.png"));
+            SpriteFrameCache.getInstance().addSpriteFramesWithFile("player1IdleFrames", player1IdlePlist, player1IdleSpriteSheet);
+
+            // player 1 blood splatter
+            SpriteFrameCache.getInstance().addSpriteFrameWithKey("player1BloodSplatterSprite", new SpriteFrame("blood_splatter_1.png", SGLTest.createColouredImage(Color.RED, 50, 50, false)));
+
+            // player 2 idle blinking
+            File player2IdlePlist = new File(getClass().getResource("assets/characters/player/player_2_idle_blinking.plist").toURI());
+            BufferedImage player2IdleSpriteSheet = ImageIO.read(getClass().getResourceAsStream("assets/characters/player/player_2_idle_blinking.png"));
+            SpriteFrameCache.getInstance().addSpriteFramesWithFile("player2IdleFrames", player2IdlePlist, player2IdleSpriteSheet);
+
+            // player 2 blood splatter
+            SpriteFrameCache.getInstance().addSpriteFrameWithKey("player2BloodSplatterSprite", new SpriteFrame("blood_splatter_2.png", SGLTest.createColouredImage(Color.PINK, 50, 50, false)));
+
+            // shuriken
+            SpriteFrameCache.getInstance().addSpriteFrameWithKey("shurikenSprite", new SpriteFrame("shuriken_standard.png", ImageIO.read(getClass().getResourceAsStream("assets/weapons/shuriken_standard.png"))));
         } catch (URISyntaxException | IOException | ParserConfigurationException | SAXException ex) {
             Logger.getLogger(SGLTest.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        LinkedList<SpriteFrame> spriteFrames2 = new LinkedList<>();
-        spriteFrames2.add(new SpriteFrame("bullet_1.png", SGLTest.createColouredImage(Color.ORANGE, 10, 10, true)));
-        // bullet
-        SpriteFrameCache.getInstance().addSpriteFramesWithKey("player1BulletFrames", spriteFrames2);
-
-        LinkedList<SpriteFrame> spriteFrames3 = new LinkedList<>();
-        spriteFrames3.add(new SpriteFrame("blood_splatter_1.png", SGLTest.createColouredImage(Color.RED, 50, 50, false)));
-        // blood splatter
-        SpriteFrameCache.getInstance().addSpriteFramesWithKey("player1BloodSplatterFrames", spriteFrames3);
-    }
-
-    private void loadPlayer2ImagesToSpriteFrameCache() {
-        // idle blinking
-        try {
-            File pList = new File(getClass().getResource("assets/characters/player/player_2_idle_blinking.plist").toURI());
-            BufferedImage spriteSheet = ImageIO.read(getClass().getResourceAsStream("assets/characters/player/player_2_idle_blinking.png"));
-            SpriteFrameCache.getInstance().addSpriteFramesWithFile("player2IdleFrames", pList, spriteSheet);
-        } catch (URISyntaxException | IOException | ParserConfigurationException | SAXException ex) {
-            Logger.getLogger(SGLTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        LinkedList<SpriteFrame> spriteFrames2 = new LinkedList<>();
-        spriteFrames2.add(new SpriteFrame("bullet_2.png", SGLTest.createColouredImage(Color.MAGENTA, 10, 10, true)));
-        // bullet
-        SpriteFrameCache.getInstance().addSpriteFramesWithKey("player2BulletFrames", spriteFrames2);
-
-        LinkedList<SpriteFrame> spriteFrames3 = new LinkedList<>();
-        spriteFrames3.add(new SpriteFrame("blood_splatter_2.png", SGLTest.createColouredImage(Color.PINK, 50, 50, false)));
-        // blood splatter
-        SpriteFrameCache.getInstance().addSpriteFramesWithKey("player2BloodSplatterFrames", spriteFrames3);
-    }
-
-    private void loadSpritesAndAnimationsIntoCache() {
-        loadPlayer1ImagesToSpriteFrameCache();
-        AnimationCache.getInstance().addAnimation("player1BloodSplatterAnimation",
-                Animation.createWithSpriteFrames(SpriteFrameCache.getInstance().getSpriteFramesByKey("player1BloodSplatterFrames"), 0, 0));
-
-        // load images for player 1 bullet into SpritFrameCache and AnimationCache
-        AnimationCache.getInstance().addAnimation("player1BulletAnimation",
-                Animation.createWithSpriteFrames(SpriteFrameCache.getInstance().getSpriteFramesByKey("player1BulletFrames"), 0, 0));
-        // load animation for player1 nto AnimationCache
+        // load animation for player1 into AnimationCache
         AnimationCache.getInstance().addAnimation("player1IdleAnimation",
                 Animation.createWithSpriteFrames(SpriteFrameCache.getInstance().getSpriteFramesByKey("player1IdleFrames"), 0.06f, 0));
 
-        //laod images for player 2 into SpritFrameCache
-        loadPlayer2ImagesToSpriteFrameCache();
-        AnimationCache.getInstance().addAnimation("player2BloodSplatterAnimation",
-                Animation.createWithSpriteFrames(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2BloodSplatterFrames"), 0, 0));
-        // load images for player 2 bullet into SpritFrameCache and AnimationCache
-        AnimationCache.getInstance().addAnimation("player2BulletAnimation",
-                Animation.createWithSpriteFrames(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2BulletFrames"), 0, 0));
         // load animation for player 2 into AnimationCache
         AnimationCache.getInstance().addAnimation("player2IdleAnimation",
                 Animation.createWithSpriteFrames(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2IdleFrames"), 0.06f, 0));
+    }
+
+    private void loadSounds() {
+        AudioEngine.getInstance().cacheSound(getClass().getResource("assets/sounds/shot.wav"));
+        AudioEngine.getInstance().cacheMusic(getClass().getResource("assets/sounds/mystical_theme.wav"));
     }
 
     private void setupPlayer1KeyBindings(Director director, Player player1) {
@@ -335,8 +291,18 @@ public class SGLTest {
                 }, "Enter pressed");
     }
 
-    private void loadSoundsIntoAudioEngineCache() {
-        AudioEngine.getInstance().cacheSound(getClass().getResource("assets/sounds/shot.wav"));
-        AudioEngine.getInstance().cacheMusic(getClass().getResource("assets/sounds/mystical_theme.wav"));
+    public static BufferedImage createColouredImage(Color color, int w, int h, boolean circular) {
+        BufferedImage img = new BufferedImage(w, h, BufferedImage.TRANSLUCENT);
+        Graphics2D g2 = img.createGraphics();
+        Graphics2DHelper.applyRenderHints(g2);
+        g2.setColor(color);
+        if (!circular) {
+            g2.fillRect(0, 0, img.getWidth(), img.getHeight());
+        } else {
+            g2.fillOval(0, 0, w, h);
+        }
+        g2.dispose();
+        return img;
     }
+
 }

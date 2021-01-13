@@ -6,7 +6,6 @@
 package sgltest;
 
 import za.co.swinggamelibrary.Animation;
-import za.co.swinggamelibrary.AnimationCache;
 import za.co.swinggamelibrary.AudioEngine;
 import za.co.swinggamelibrary.ICollidable;
 import za.co.swinggamelibrary.INode;
@@ -22,32 +21,33 @@ public class Player extends Sprite implements ICollidable {
     protected int speed;
     protected Direction direction;
     public boolean LEFT, RIGHT, UP, DOWN;
-    private final String bulletAnimationName;
-    private final String bloodSplatterAnimationName;
+    private final String bulletSpriteFrameName;
+    private final String bloodSplatterSpriteFrameName;
 
-    public Player(int worldX, int worldY, Animation idleAnimation, Direction direction, String bulletAnimationName, String bloodSplatterAnimationName, boolean isFlippedX) {
-        super(worldX, worldY, idleAnimation);
-        this.direction = direction;
-        this.bulletAnimationName = bulletAnimationName;
-        this.speed = DEFAULT_SPEED;
-        this.bloodSplatterAnimationName = bloodSplatterAnimationName;
+    public Player(int x, int y, Animation idleAnimation, Direction direction, String bulletSpriteFrameName, String bloodSplatterSpriteFrameName, boolean isFlippedX) {
+        super(idleAnimation);
+        this.setPosition(x, y);
         this.setFlippedX(isFlippedX);
+        this.direction = direction;
+        this.bulletSpriteFrameName = bulletSpriteFrameName;
+        this.bloodSplatterSpriteFrameName = bloodSplatterSpriteFrameName;
+        this.speed = DEFAULT_SPEED;
     }
 
     @Override
     public void update(long elapsedTime) {
         super.update(elapsedTime);
-        move();
+        this.move();
     }
 
     @Override
     public void onCollision(INode node) {
         if (node instanceof Player) {
             System.out.println("Players intersected");
-        } else if (node instanceof Bullet && ((Bullet) node).getOwner() != this) { // a bullet which is not our own struck us
+        } else if (node instanceof Shuriken && ((Shuriken) node).getOwner() != this) { // a bullet which is not our own struck us
             System.out.println("Bullet struck player");
-            BloodSplatter bs = new BloodSplatter(node.getX(), node.getY(), AnimationCache.getInstance().getAnimation(bloodSplatterAnimationName));
-            getParent().add(bs);
+            BloodSplatter bloodSplatter = new BloodSplatter(node.getX(), node.getY(), this.bloodSplatterSpriteFrameName);
+            this.getParent().add(bloodSplatter);
         }
     }
 
@@ -56,41 +56,40 @@ public class Player extends Sprite implements ICollidable {
     }
 
     public int getSpeed() {
-        return speed;
+        return this.speed;
     }
 
     public Direction getDirection() {
-        return direction;
+        return this.direction;
     }
 
     private void move() {
-        if (LEFT && (getScreenX() - speed) >= 0) {
-            direction = Direction.LEFT_FACING;
+        if (LEFT && (this.getScreenX() - this.speed) >= 0) {
+            this.direction = Direction.LEFT_FACING;
             this.setFlippedX(true);
-            setX(getX() - speed);
+            this.setX(this.getX() - this.speed);
         }
 
-        if (RIGHT && (getScreenX() + speed) + getWidth() <= getParent().getWidth()) {
-            direction = Direction.RIGHT_FACING;
+        if (RIGHT && (this.getScreenX() + speed) + getWidth() <= this.getParent().getWidth()) {
+            this.direction = Direction.RIGHT_FACING;
             this.setFlippedX(false);
-            setX(getX() + speed);
+            this.setX(this.getX() + this.speed);
         }
 
-        if (UP && (getScreenY() - speed) >= 0) {
-            setY(getY() - speed);
+        if (UP && (this.getScreenY() - this.speed) >= 0) {
+            this.setY(this.getY() - this.speed);
         }
 
-        if (DOWN && (getScreenY() + speed) + getHeight() <= getParent().getHeight()) {
-            setY(getY() + speed);
+        if (DOWN && (this.getScreenY() + this.speed) + this.getHeight() <= this.getParent().getHeight()) {
+            this.setY(this.getY() + this.speed);
         }
     }
 
     public void shoot() {
-        int bulletX = (int) (getX() + getWidth() / 2);
-        int bulletY = (int) (getY() + getHeight() / 2);
-        Animation bulletAnimation = AnimationCache.getInstance().getAnimation(bulletAnimationName);
-        Bullet bullet = new Bullet(bulletX, bulletY, bulletAnimation, this);
-        getParent().add(bullet);
+        int shurikenX = (int) (this.getX() + this.getWidth() / 2);
+        int shurikenY = (int) (this.getY() + this.getHeight() / 2);
+        Shuriken shuriken = new Shuriken(shurikenX, shurikenY, this.bulletSpriteFrameName, this);
+        this.getParent().add(shuriken);
         AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);
     }
 }

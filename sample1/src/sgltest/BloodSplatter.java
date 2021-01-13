@@ -5,7 +5,6 @@
  */
 package sgltest;
 
-import za.co.swinggamelibrary.Animation;
 import za.co.swinggamelibrary.Sprite;
 
 
@@ -15,7 +14,8 @@ import za.co.swinggamelibrary.Sprite;
  */
 public class BloodSplatter extends Sprite {
     
-    public BloodSplatter(int worldX, int worldY, Animation animation) {
-        super(worldX, worldY, animation);
+    public BloodSplatter(int x, int y, String spriteFrameName) {
+        super(spriteFrameName);
+        this.setPosition(x, y);
     }
 }
