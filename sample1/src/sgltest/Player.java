@@ -5,8 +5,8 @@
  */
 package sgltest;
 
+import za.co.swinggamelibrary.Animation;
 import za.co.swinggamelibrary.AnimationCache;
-import za.co.swinggamelibrary.AnimationFrame;
 import za.co.swinggamelibrary.AudioEngine;
 import za.co.swinggamelibrary.ICollidable;
 import za.co.swinggamelibrary.INode;
@@ -23,12 +23,15 @@ public class Player extends Sprite implements ICollidable {
     protected Direction direction;
     public boolean LEFT, RIGHT, UP, DOWN;
     private final String bulletAnimationName;
+    private final String bloodSplatterAnimationName;
 
-    public Player(int worldX, int worldY, AnimationFrame animation, Direction direction, String bulletAnimationName) {
-        super(worldX, worldY, animation);
+    public Player(int worldX, int worldY, Animation idleAnimation, Direction direction, String bulletAnimationName, String bloodSplatterAnimationName, boolean isFlippedX) {
+        super(worldX, worldY, idleAnimation);
         this.direction = direction;
         this.bulletAnimationName = bulletAnimationName;
         this.speed = DEFAULT_SPEED;
+        this.bloodSplatterAnimationName = bloodSplatterAnimationName;
+        this.setFlippedX(isFlippedX);
     }
 
     @Override
@@ -41,6 +44,10 @@ public class Player extends Sprite implements ICollidable {
     public void onCollision(INode node) {
         if (node instanceof Player) {
             System.out.println("Players intersected");
+        } else if (node instanceof Bullet && ((Bullet) node).getOwner() != this) { // a bullet which is not our own struck us
+            System.out.println("Bullet struck player");
+            BloodSplatter bs = new BloodSplatter(node.getX(), node.getY(), AnimationCache.getInstance().getAnimation(bloodSplatterAnimationName));
+            getParent().add(bs);
         }
     }
 
@@ -59,27 +66,29 @@ public class Player extends Sprite implements ICollidable {
     private void move() {
         if (LEFT && (getScreenX() - speed) >= 0) {
             direction = Direction.LEFT_FACING;
-            setWorldX(getWorldX() - speed);
+            this.setFlippedX(true);
+            setX(getX() - speed);
         }
 
         if (RIGHT && (getScreenX() + speed) + getWidth() <= getParent().getWidth()) {
             direction = Direction.RIGHT_FACING;
-            setWorldX(getWorldX() + speed);
+            this.setFlippedX(false);
+            setX(getX() + speed);
         }
 
         if (UP && (getScreenY() - speed) >= 0) {
-            setWorldY(getWorldY() - speed);
+            setY(getY() - speed);
         }
 
         if (DOWN && (getScreenY() + speed) + getHeight() <= getParent().getHeight()) {
-            setWorldY(getWorldY() + speed);
+            setY(getY() + speed);
         }
     }
 
     public void shoot() {
-        int bulletX = (int) (getWorldX() + getWidth() / 2);
-        int bulletY = (int) (getWorldY() + getHeight() / 2);
-        AnimationFrame bulletAnimation = AnimationCache.getInstance().getAnimation(bulletAnimationName);
+        int bulletX = (int) (getX() + getWidth() / 2);
+        int bulletY = (int) (getY() + getHeight() / 2);
+        Animation bulletAnimation = AnimationCache.getInstance().getAnimation(bulletAnimationName);
         Bullet bullet = new Bullet(bulletX, bulletY, bulletAnimation, this);
         getParent().add(bullet);
         AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);

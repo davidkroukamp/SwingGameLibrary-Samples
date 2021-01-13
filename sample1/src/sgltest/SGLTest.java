@@ -12,7 +12,14 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -20,8 +27,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
+import za.co.swinggamelibrary.Animation;
 import za.co.swinggamelibrary.AnimationCache;
-import za.co.swinggamelibrary.AnimationFrame;
 import za.co.swinggamelibrary.AudioEngine;
 import za.co.swinggamelibrary.DesignMetrics;
 import za.co.swinggamelibrary.Director;
@@ -38,13 +47,12 @@ import za.co.swinggamelibrary.SpriteFrameCache;
  */
 public class SGLTest {
 
-    private static final int FPS = 60;
     private static final Dimension SCREEN_SIZE = new Dimension(1440, 900);
     private static final Dimension DESIGN_SCREEN_SIZE = new Dimension(800, 600);
     private String backgroundMusicId;
 
     public SGLTest() {
-        DesignMetrics.getInstance().initialise(DESIGN_SCREEN_SIZE, SCREEN_SIZE);
+        DesignMetrics.initialise(DESIGN_SCREEN_SIZE, SCREEN_SIZE);
         loadSpritesAndAnimationsIntoCache();
         loadSoundsIntoAudioEngineCache();
         createAndShowGui();
@@ -73,7 +81,7 @@ public class SGLTest {
         frame.setResizable(false);
 
         // Designmetrics should be initialised before creating an instance of the director
-        Director director = new Director(FPS);
+        Director director = new Director();
         // show FPS and objects rendered counter
         director.setRenderDebugInfo(true);
         // draw red rectangles around nodes for debugging purposes (helps check collisions etc)
@@ -98,11 +106,11 @@ public class SGLTest {
 
             //create player 1 game object which can be controlled by W,S,A,D and SPACE to shoot
             final Player player1 = new Player(0, 0,
-                    AnimationCache.getInstance().getAnimation("player1IdleAnimation"), Direction.RIGHT_FACING, "bullet1Animation");
+                    AnimationCache.getInstance().getAnimation("player1IdleAnimation"), Direction.RIGHT_FACING, "player1BulletAnimation", "player1BloodSplatterAnimation", false);
 
             //create player 2 game onject which can be controlled by UP,DOWN,LEFT,RIGHT and Numpad ENTER to shoot
             final Player player2 = new Player(700, 500,
-                    AnimationCache.getInstance().getAnimation("player2IdleAnimation"), Direction.LEFT_FACING, "bullet2Animation");
+                    AnimationCache.getInstance().getAnimation("player2IdleAnimation"), Direction.LEFT_FACING, "player2BulletAnimation", "player2BloodSplatterAnimation", true);
 
             // add gameobjetcs to the gamepanel
             scene.add(player1);
@@ -141,7 +149,7 @@ public class SGLTest {
             //if we want enitites to be cleared and a blank panel shown
             //scene.removeAll();    
             director.stop();
-            
+
             pauseButton.setText("Pause");
             startButton.setEnabled(true);
             pauseButton.setEnabled(false);
@@ -176,53 +184,69 @@ public class SGLTest {
     }
 
     private void loadPlayer1ImagesToSpriteFrameCache() {
-        ArrayList<BufferedImage> images = new ArrayList<>();
-        images.add(createColouredImage(Color.RED, 100, 100, false));
-        images.add(createColouredImage(Color.WHITE, 100, 100, false));
-        images.add(createColouredImage(Color.GREEN, 100, 100, false));
-        //create arraylist of images scaled for the current screen size
-        ArrayList<BufferedImage> scaledImages = ImageScaler.getInstance().scaleImages(images);
-        for (int i = 0; i < scaledImages.size(); i++) {
-            SpriteFrameCache.getInstance().addSpriteFramesWithKey("player1Idle",
-                    new SpriteFrame("player1_idle_" + i + ".png", scaledImages.get(i)));
+        // idle blinking
+        try {
+            File pList = new File(getClass().getResource("assets/characters/player/player_1_idle_blinking.plist").toURI());
+            BufferedImage spriteSheet = ImageIO.read(getClass().getResourceAsStream("assets/characters/player/player_1_idle_blinking.png"));
+            SpriteFrameCache.getInstance().addSpriteFramesWithFile("player1IdleFrames", pList, spriteSheet);
+        } catch (URISyntaxException | IOException | ParserConfigurationException | SAXException ex) {
+            Logger.getLogger(SGLTest.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        LinkedList<SpriteFrame> spriteFrames2 = new LinkedList<>();
+        spriteFrames2.add(new SpriteFrame("bullet_1.png", SGLTest.createColouredImage(Color.ORANGE, 10, 10, true)));
+        // bullet
+        SpriteFrameCache.getInstance().addSpriteFramesWithKey("player1BulletFrames", spriteFrames2);
+
+        LinkedList<SpriteFrame> spriteFrames3 = new LinkedList<>();
+        spriteFrames3.add(new SpriteFrame("blood_splatter_1.png", SGLTest.createColouredImage(Color.RED, 50, 50, false)));
+        // blood splatter
+        SpriteFrameCache.getInstance().addSpriteFramesWithKey("player1BloodSplatterFrames", spriteFrames3);
     }
 
     private void loadPlayer2ImagesToSpriteFrameCache() {
-        ArrayList<BufferedImage> images = new ArrayList<>();
-        images.add(createColouredImage(Color.CYAN, 100, 100, false));
-        images.add(createColouredImage(Color.YELLOW, 100, 100, false));
-        images.add(createColouredImage(Color.MAGENTA, 100, 100, false));
-        // create arraylist of images scaled for the current screen size
-        ArrayList<BufferedImage> scaledImages = ImageScaler.getInstance().scaleImages(images);
-        for (int i = 0; i < scaledImages.size(); i++) {
-            SpriteFrameCache.getInstance().addSpriteFramesWithKey("player2Idle",
-                    new SpriteFrame("player2_idle_" + i + ".png", scaledImages.get(i)));
+        // idle blinking
+        try {
+            File pList = new File(getClass().getResource("assets/characters/player/player_2_idle_blinking.plist").toURI());
+            BufferedImage spriteSheet = ImageIO.read(getClass().getResourceAsStream("assets/characters/player/player_2_idle_blinking.png"));
+            SpriteFrameCache.getInstance().addSpriteFramesWithFile("player2IdleFrames", pList, spriteSheet);
+        } catch (URISyntaxException | IOException | ParserConfigurationException | SAXException ex) {
+            Logger.getLogger(SGLTest.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        LinkedList<SpriteFrame> spriteFrames2 = new LinkedList<>();
+        spriteFrames2.add(new SpriteFrame("bullet_2.png", SGLTest.createColouredImage(Color.MAGENTA, 10, 10, true)));
+        // bullet
+        SpriteFrameCache.getInstance().addSpriteFramesWithKey("player2BulletFrames", spriteFrames2);
+
+        LinkedList<SpriteFrame> spriteFrames3 = new LinkedList<>();
+        spriteFrames3.add(new SpriteFrame("blood_splatter_2.png", SGLTest.createColouredImage(Color.PINK, 50, 50, false)));
+        // blood splatter
+        SpriteFrameCache.getInstance().addSpriteFramesWithKey("player2BloodSplatterFrames", spriteFrames3);
     }
 
     private void loadSpritesAndAnimationsIntoCache() {
-        // load images for player 1 bullet into SpritFrameCache and AnimationCache
-        SpriteFrameCache.getInstance().addSpriteFramesWithKey("bullet1Animation",
-                new SpriteFrame("bullet_1.png", SGLTest.createColouredImage(Color.ORANGE, 10, 10, true)));
-        AnimationCache.getInstance().addAnimation("bullet1Animation",
-                new AnimationFrame(SpriteFrameCache.getInstance().getSpriteFramesByKey("bullet1Animation"), 0, 0));
-        // load images for player 1 into SpritFrameCache
         loadPlayer1ImagesToSpriteFrameCache();
+        AnimationCache.getInstance().addAnimation("player1BloodSplatterAnimation",
+                Animation.createWithSpriteFrames(SpriteFrameCache.getInstance().getSpriteFramesByKey("player1BloodSplatterFrames"), 0, 0));
+
+        // load images for player 1 bullet into SpritFrameCache and AnimationCache
+        AnimationCache.getInstance().addAnimation("player1BulletAnimation",
+                Animation.createWithSpriteFrames(SpriteFrameCache.getInstance().getSpriteFramesByKey("player1BulletFrames"), 0, 0));
         // load animation for player1 nto AnimationCache
         AnimationCache.getInstance().addAnimation("player1IdleAnimation",
-                new AnimationFrame(SpriteFrameCache.getInstance().getSpriteFramesByKey("player1Idle"), 300, 0));
+                Animation.createWithSpriteFrames(SpriteFrameCache.getInstance().getSpriteFramesByKey("player1IdleFrames"), 0.06f, 0));
 
-        // load images for player 2 bullet into SpritFrameCache and AnimationCache
-        SpriteFrameCache.getInstance().addSpriteFramesWithKey("bullet2Animation",
-                new SpriteFrame("bullet_2.png", SGLTest.createColouredImage(Color.MAGENTA, 10, 10, true)));
-        AnimationCache.getInstance().addAnimation("bullet2Animation",
-                new AnimationFrame(SpriteFrameCache.getInstance().getSpriteFramesByKey("bullet2Animation"), 0, 0));
         //laod images for player 2 into SpritFrameCache
         loadPlayer2ImagesToSpriteFrameCache();
+        AnimationCache.getInstance().addAnimation("player2BloodSplatterAnimation",
+                Animation.createWithSpriteFrames(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2BloodSplatterFrames"), 0, 0));
+        // load images for player 2 bullet into SpritFrameCache and AnimationCache
+        AnimationCache.getInstance().addAnimation("player2BulletAnimation",
+                Animation.createWithSpriteFrames(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2BulletFrames"), 0, 0));
         // load animation for player 2 into AnimationCache
         AnimationCache.getInstance().addAnimation("player2IdleAnimation",
-                new AnimationFrame(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2Idle"), 300, 0));
+                Animation.createWithSpriteFrames(SpriteFrameCache.getInstance().getSpriteFramesByKey("player2IdleFrames"), 0.06f, 0));
     }
 
     private void setupPlayer1KeyBindings(Director director, Player player1) {

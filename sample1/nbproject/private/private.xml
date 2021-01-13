@@ -3,10 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/D:/MyStuff/swinggamelibrary-samples/sample1/src/sgltest/assets/characters/player/idle_0.png</file>
             <file>file:/D:/MyStuff/swinggamelibrary-samples/sample1/src/sgltest/SGLTest.java</file>
+            <file>file:/D:/MyStuff/swinggamelibrary-samples/sample1/src/sgltest/assets/characters/player/idle_blinking.plist</file>
             <file>file:/D:/MyStuff/swinggamelibrary-samples/sample1/src/sgltest/Player.java</file>
-            <file>file:/D:/MyStuff/swinggamelibrary-samples/sample1/src/sgltest/Bullet.java</file>
-            <file>file:/D:/MyStuff/swinggamelibrary-samples/sample1/src/sgltest/Direction.java</file>
+            <file>file:/D:/MyStuff/swinggamelibrary-samples/sample1/src/sgltest/assets/characters/player/idle_blinking.png</file>
         </group>
     </open-files>
 </project-private>

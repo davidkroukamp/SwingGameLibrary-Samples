@@ -5,7 +5,8 @@
  */
 package sgltest;
 
-import za.co.swinggamelibrary.AnimationFrame;
+import za.co.swinggamelibrary.AnimationCache;
+import za.co.swinggamelibrary.Animation;
 import za.co.swinggamelibrary.ICollidable;
 import za.co.swinggamelibrary.INode;
 import za.co.swinggamelibrary.Sprite;
@@ -21,7 +22,7 @@ public class Bullet extends Sprite implements ICollidable {
     protected int speed;
     public final static int DEFAULT_SPEED = 5;
 
-    public Bullet(int worldX, int worldY, AnimationFrame animation, final Player owner) {
+    public Bullet(int worldX, int worldY, Animation animation, final Player owner) {
         super(worldX, worldY, animation);
         this.owner = owner;
         speed = DEFAULT_SPEED * 2;
@@ -45,8 +46,8 @@ public class Bullet extends Sprite implements ICollidable {
             return;
         }
 
+        // assume we collided with some other node so bullet must now be removed
         removeFromParent();
-        System.out.println("Bullet struck another player");
     }
 
     public Sprite getOwner() {
@@ -57,13 +58,13 @@ public class Bullet extends Sprite implements ICollidable {
         if (left && (getScreenX() - speed) <= 0) {
             removeFromParent();
         } else if (left) {
-            setWorldX(getWorldX() - speed);
+            setX(getX() - speed);
         }
 
         if (right && (getScreenX() + speed) + getWidth() >= getParent().getWidth()) {
             removeFromParent();
         } else if (right) {
-            setWorldX(getWorldX() + speed);
+            setX(getX() + speed);
         }
     }
 }
