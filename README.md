@@ -8,3 +8,4 @@ A repository of samples using the [SwingGameLibrary](https://github.com/davidkro
 
 ***TODO:***
 - [ ] Allow 2 or more `KeyBinding`s to be used by making player `shoot()` use a boolean flag
+- [ ] Correct `Shurkiken` positioning when `setFlippedX(true)` is `true`
