@@ -5,6 +5,7 @@
  */
 package sgltest;
 
+import java.util.EnumSet;
 import za.co.swinggamelibrary.Animation;
 import za.co.swinggamelibrary.AudioEngine;
 import za.co.swinggamelibrary.ICollidable;
@@ -19,15 +20,16 @@ public class Player extends Sprite implements ICollidable {
 
     private final static int DEFAULT_SPEED = 5;
     protected int speed;
-    protected Direction direction;
+    protected SpriteDirection direction;
     public boolean LEFT, RIGHT, UP, DOWN;
     private final String bulletSpriteFrameName;
     private final String bloodSplatterSpriteFrameName;
 
-    public Player(int x, int y, Animation idleAnimation, Direction direction, String bulletSpriteFrameName, String bloodSplatterSpriteFrameName, boolean isFlippedX) {
+    public Player(int x, int y, Animation idleAnimation, SpriteDirection direction, String bulletSpriteFrameName, String bloodSplatterSpriteFrameName, boolean isFlippedX) {
         super(idleAnimation);
         this.setPosition(x, y);
         this.setFlippedX(isFlippedX);
+        this.setMovementRestrictedToParent(true, EnumSet.of(Direction.ALL));
         this.direction = direction;
         this.bulletSpriteFrameName = bulletSpriteFrameName;
         this.bloodSplatterSpriteFrameName = bloodSplatterSpriteFrameName;
@@ -59,35 +61,40 @@ public class Player extends Sprite implements ICollidable {
         return this.speed;
     }
 
-    public Direction getDirection() {
+    public SpriteDirection getDirection() {
         return this.direction;
     }
 
     private void move() {
-        if (LEFT && (this.getScreenX() - this.speed) >= 0) {
-            this.direction = Direction.LEFT_FACING;
+        if (LEFT) {
+            this.direction = SpriteDirection.LEFT_FACING;
             this.setFlippedX(true);
             this.setX(this.getX() - this.speed);
         }
 
-        if (RIGHT && (this.getScreenX() + speed) + getWidth() <= this.getParent().getWidth()) {
-            this.direction = Direction.RIGHT_FACING;
+        if (RIGHT) {
+            this.direction = SpriteDirection.RIGHT_FACING;
             this.setFlippedX(false);
             this.setX(this.getX() + this.speed);
         }
 
-        if (UP && (this.getScreenY() - this.speed) >= 0) {
+        if (UP) {
             this.setY(this.getY() - this.speed);
         }
 
-        if (DOWN && (this.getScreenY() + this.speed) + this.getHeight() <= this.getParent().getHeight()) {
+        if (DOWN) {
             this.setY(this.getY() + this.speed);
         }
     }
 
+    @Override
+    public void onMovementRestricted() {
+        System.out.println("Movement restricted");
+    }
+
     public void shoot() {
-        int shurikenX = (int) (this.getX() + this.getWidth() / 2);
-        int shurikenY = (int) (this.getY() + this.getHeight() / 2);
+        int shurikenX = (int) (this.getX() + this.getWidth()) - 25;
+        int shurikenY = (int) (this.getY() + this.getHeight() / 2) - 25;
         Shuriken shuriken = new Shuriken(shurikenX, shurikenY, this.bulletSpriteFrameName, this);
         this.getParent().add(shuriken);
         AudioEngine.getInstance().playSound(getClass().getResource("assets/sounds/shot.wav"), 0.5f);

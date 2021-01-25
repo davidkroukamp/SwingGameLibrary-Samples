@@ -103,11 +103,11 @@ public class SGLTest {
 
             //create player 1 which can be controlled by W,S,A,D and SPACE to shoot
             final Player player1 = new Player(0, 0,
-                    AnimationCache.getInstance().getAnimation("player1IdleAnimation"), Direction.RIGHT_FACING, "shuriken_standard.png", "blood_splatter_1.png", false);
+                    AnimationCache.getInstance().getAnimation("player1IdleAnimation"), SpriteDirection.RIGHT_FACING, "shuriken_standard.png", "blood_splatter_1.png", false);
 
             //create player 2 which can be controlled by UP,DOWN,LEFT,RIGHT and Numpad ENTER to shoot
             final Player player2 = new Player(700, 500,
-                    AnimationCache.getInstance().getAnimation("player2IdleAnimation"), Direction.LEFT_FACING, "shuriken_standard.png", "blood_splatter_2.png", true);
+                    AnimationCache.getInstance().getAnimation("player2IdleAnimation"), SpriteDirection.LEFT_FACING, "shuriken_standard.png", "blood_splatter_2.png", true);
 
             // add gameobjetcs to the gamepanel
             scene.add(player1);

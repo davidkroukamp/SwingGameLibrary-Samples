@@ -26,9 +26,9 @@ public class Shuriken extends Sprite implements ICollidable {
         this.owner = owner;
         this.speed = DEFAULT_SPEED * 2;
         // check which way the player is facing and make bullet face and travel in the correct direction
-        if (this.owner.getDirection() == Direction.LEFT_FACING) {
+        if (this.owner.getDirection() == SpriteDirection.LEFT_FACING) {
             this.left = true;
-        } else if (this.owner.getDirection() == Direction.RIGHT_FACING) {
+        } else if (this.owner.getDirection() == SpriteDirection.RIGHT_FACING) {
             this.right = true;
         }
     }

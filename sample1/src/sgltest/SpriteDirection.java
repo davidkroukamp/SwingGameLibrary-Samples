@@ -9,7 +9,7 @@ package sgltest;
  *
  * @author dkrou
  */
-public enum Direction {
+public enum SpriteDirection {
     LEFT_FACING,
     RIGHT_FACING
 }
