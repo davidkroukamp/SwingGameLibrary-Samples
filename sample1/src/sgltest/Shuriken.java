@@ -23,6 +23,7 @@ public class Shuriken extends Sprite implements ICollidable {
     public Shuriken(int x, int y, String spriteFrameName, final Player owner) {
         super(spriteFrameName);
         this.setPosition(x, y);
+        this.setScale(0.5f);
         this.owner = owner;
         this.speed = DEFAULT_SPEED * 2;
         // check which way the player is facing and make bullet face and travel in the correct direction
